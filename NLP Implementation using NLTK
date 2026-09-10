@@ -1,0 +1,83 @@
+import nltk
+
+from nltk import word_tokenize, pos_tag, bigrams, trigrams
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.probability import FreqDist, LidstoneProbDist
+from nltk import RegexpParser
+
+from collections import Counter
+
+nltk.data.path.append("C:/Desktop/nltk_data")
+
+nltk.download('punkt', download_dir="C:/Desktop/nltk_data")
+nltk.download('averaged_perceptron_tagger',
+              download_dir="C:/Desktop/nltk_data")
+nltk.download('stopwords', download_dir="C:/Desktop/nltk_data")
+
+text = "Tomatoes are essential in cooking. They grow well in warm climates."
+
+print("Original Text:\n", text)
+
+tokens = word_tokenize(text)
+
+print("\nTokens:\n", tokens)
+
+stop_words = set(stopwords.words('english'))
+
+filtered_words = [
+    word for word in tokens
+    if word.lower() not in stop_words and word.isalpha()
+]
+
+print("\nAfter Removing Stop Words:\n", filtered_words)
+
+ps = PorterStemmer()
+
+stemmed_words = [ps.stem(word) for word in filtered_words]
+
+print("\nAfter Stemming:\n", stemmed_words)
+
+tags = pos_tag(tokens)
+
+print("\nPart-of-Speech Tags:\n", tags)
+
+tag_counts = Counter(tag for word, tag in tags)
+
+print("\nPOS Tag Counts:\n", tag_counts)
+
+bigrams_list = list(bigrams(tokens))
+
+trigrams_list = list(trigrams(tokens))
+
+print("\nBigrams:\n", bigrams_list)
+
+print("\nTrigrams:\n", trigrams_list)
+
+fdist = FreqDist(bigrams_list)
+
+print("\nBigram Frequencies:")
+
+for bigram, freq in fdist.items():
+    print(bigram, ":", freq)
+
+lidstone_prob = LidstoneProbDist(
+    fdist, 0.1, bins=len(fdist)
+)
+
+print("\nSmoothed Probability Example:")
+
+print(
+    "P('Tomatoes', 'are') =",
+    lidstone_prob.prob(('Tomatoes', 'are'))
+)
+
+grammar = "NP: {<DT>?<JJ>*<NN>|<NNS>}"
+
+chunk_parser = RegexpParser(grammar)
+
+chunked = chunk_parser.parse(tags)
+
+print("\nChunked Sentence Tree:")
+
+print(chunked)
